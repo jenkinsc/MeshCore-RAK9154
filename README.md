@@ -119,8 +119,11 @@ What you see in the MeshCore app's **Telemetry** screen for the repeater:
 
 Fault byte bits (add them up to read the number the app shows): 1 = over-voltage, 2 = charge over-current,
 4 = charge low-temperature, 8 = charge high-temperature, 16 = charge short-circuit, 32 = charge over-current lock.
-For example `9` means over-voltage plus charge high-temperature. Only the "no faults" value has been seen on real
-hardware so far; the bit order follows RAK's documentation.
+For example `9` means over-voltage plus charge high-temperature. On real hardware `0` (no faults) and `1` (over-voltage,
+the probe's word `0x0040`, seen in `rak9154 extra`) have been observed, so those two decode as documented. In the `1`
+case the pack read 12.32 V at 100 % state of charge with 0 mA charge current, i.e. a full battery that had stopped
+charging; what exactly triggers the probe's over-voltage bit is not confirmed, so treat it as "check the battery", not
+as a certain over-charge. The other bits follow RAK's documentation and have not been seen.
 
 Also available on the repeater's admin console: a `rak9154` command with live status and diagnostics (below), and a
 decoder for the probe's battery fault flags and firmware version (both visible in the console; the fault flags are also published as the fault byte above, the firmware version stays console-only).
@@ -137,8 +140,9 @@ hardware 0x44, firmware 1.2.9):
   the app's Telemetry screen showed the battery on channel 1.
 - The voltage matches a multimeter reading at the battery.
 - The fault byte appears on channel 2 next to the battery temperature as a digital input (0 = no faults), on the build from release `rak9154-repeater-v1.18.0-a3de8024`.
-- The app's Telemetry screen shows battery %, voltage, charge current, state of charge (%) on channel 1 and the battery
-  temperature on channel 2 (for example `100% / 12.43v`, `0.000A`, `100%`, `36.5C`).
+- The app's Telemetry screen shows battery voltage, charge current and state of charge (%) on channel 1 (for example
+  `12.43v`, `0.000A`, `100%`), next to the repeater chip temperature, and the **battery** temperature on channel 2
+  (for example `27.0C`, matching `T:27.0C` in `rak9154 status`).
 - `rak9154 extra` returned `ch19=0000 (faults:none)` and `ch1A=0004 (fw:V00.04)` from the real probe, so the `0xF3` words
   arrive as documented: channel 0x19 carries the battery fault bits and 0x1A the battery firmware version.
 
